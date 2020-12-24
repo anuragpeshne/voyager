@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Game - Voyager</title>
+
+    <!-- Bootstrap -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <link rel="stylesheet" href="/static/game.css">
+    <style>
+     body {
+         padding-top: 40px;
+         padding-bottom: 40px;
+         background-color: #eee;
+     }
+    </style>
+  </head>
+  <body>
+      <div class="container">
+          <div id="gridContainer"></div>
+      </div> <!-- /container -->
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script>
+     var uuid = '{{uuid}}';
+     var mapDimension = {{map_dim}};
+     var playerName = '{{player_name}}';
+     var start = {{start}};
+     var dest = {{dest}};
+
+     drawGrid();
+     move(null, start);
+     placeDestination(dest);
+
+     function drawGrid() {
+         var nrow = mapDimension[0];
+         var ncol = mapDimension[1];
+         var container = document.getElementById('gridContainer');
+         var cellSize = Math.floor((container.offsetWidth - 200) / nrow);
+
+         for (var i = 0; i < nrow; i++) {
+             var row = document.createElement("div");
+             row.className = "row";
+             for (var j = 0; j < ncol; j++) {
+                 var cell = document.createElement("div");
+                 cell.classList.add("cell", "fow");
+                 cell.setAttribute(
+                     "style",
+                     "width:" + cellSize + "px; " +
+                     "height:" + cellSize + "px; " +
+                     "font-size: " + cellSize / 3 + "px;"
+                 );
+                 cell.id =  i + '-' + j;
+                 row.appendChild(cell);
+             }
+             container.appendChild(row);
+         }
+     }
+
+     function move(from, to) {
+         var payload = {
+             'key': uuid,
+             'to': to
+         }
+         var opts = {
+             method: 'POST',
+             body: JSON.stringify(payload),
+             headers: {
+                 'Content-Type': 'application/json'
+             }
+         };
+         fetch('/move', opts)
+             .then(function (response) {
+                 return response.json();
+             })
+             .then(function (move_resp) {
+                 var peek_cells = move_resp['peek_cells'];
+                 var energy_spent = move_resp['energy_spent'];
+                 peek_cells.forEach(function(cell_data) {
+                     peek(cell_data[0], cell_data[1]);
+                 });
+                 updateEnergySpent(energy_spent);
+             });
+
+         var toid = to[0] + '-' + to[1];
+         var tocell = document.getElementById(toid);
+         tocell.classList.remove('fow');
+         tocell.innerHTML = '🛸';
+     }
+
+     function placeDestination(destination) {
+         var id = destination[0] + '-' + destination[1];
+         var cell = document.getElementById(id);
+         cell.innerHTML = '🚩';
+     }
+
+      function peek(cell, cost) {
+          var id = cell[0] + '-' + cell[1];
+          var cell = document.getElementById(id);
+          cell.classList.remove('fow');
+          cell.innerHTML = cost;
+     }
+
+     function test() {
+         var opts = {
+             method: 'GET',
+             headers: {}
+         };
+         fetch('/maps', opts)
+             .then(function (response) {
+                 return response.json();
+             })
+             .then(function (maps) {
+                 console.log(maps);
+                 var mapSelect = document.getElementById('inputMap');
+                 for (var i = 0; i < maps.length; i++) {
+                     var opt = document.createElement('option');
+                     opt.value = maps[i];
+                     opt.innerHTML = maps[i];
+                     mapSelect.appendChild(opt);
+                 }
+             });
+     }
+    </script>
+  </body>
+</html>
