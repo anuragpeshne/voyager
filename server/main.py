@@ -35,7 +35,7 @@ def game():
 
     map_ = map_data['map']
     return render_template('game.html',
-                           map_dim=[len(map_[0]), len(map_)],
+                           map_dim=[len(map_), len(map_[0])],
                            start=map_data['start'],
                            dest=map_data['dest'],
                            player_name=player_name,
@@ -57,7 +57,8 @@ def move():
     map_ = map_data['map']
     map_dim = [len(map_), len(map_[0])]
     neighbours = __get_neighbours(to_cell, map_dim)
-    explored_neighbours = [[row, col] for [row, col] in neighbours if (row, col) in current_state['explored_cell']]
+    explored_neighbours = [[row, col] for [row, col] in neighbours
+                           if (row, col) in current_state['explored_cell']]
 
     if (len(current_state['explored_cell']) == 0 or
         len(explored_neighbours) > 0):
@@ -76,7 +77,8 @@ def __get_neighbours(cell, dim):
                            [cell[0], cell[1] + 1],
                            [cell[0] - 1, cell[1]],
                            [cell[0], cell[1] - 1]]
-    return [[row, col] for [row, col] in possible_neighbours if row >= 0 and row < dim[0] and col >= 0 and col < dim[1]]
+    return [[row, col] for [row, col] in possible_neighbours
+            if row >= 0 and row < dim[0] and col >= 0 and col < dim[1]]
 
 
 if __name__ == "__main__":

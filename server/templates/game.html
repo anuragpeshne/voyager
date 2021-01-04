@@ -13,8 +13,8 @@
       <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
       <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
     <![endif]-->
-    <link rel="stylesheet" href="/static/game.css">
-    <style>
+    <link rel="stylesheet" type="text/css" href="/static/game.css">
+    <style type="text/css">
      body {
          padding-top: 40px;
          padding-bottom: 40px;
@@ -28,19 +28,21 @@
       </div> <!-- /container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
     <!-- Include all compiled plugins (below), or include individual files as needed -->
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
-    <script>
+    <script type="text/javascript" src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js" integrity="sha384-Tc5IQib027qvyjSMfHjOMaLkfuWVxZxUPnCJA7l2mCWNIpG9mGCD8wGNIcPD7Txa" crossorigin="anonymous"></script>
+    <script type="text/javascript">
      var uuid = '{{uuid}}';
      var mapDimension = {{map_dim}};
      var playerName = '{{player_name}}';
      var start = {{start}};
      var dest = {{dest}};
+     var state = null;
 
      drawGrid();
      move(null, start);
      placeDestination(dest);
+     attachEventListeners();
 
      function drawGrid() {
          var nrow = mapDimension[0];
@@ -61,6 +63,7 @@
                      "font-size: " + cellSize / 3 + "px;"
                  );
                  cell.id =  i + '-' + j;
+                 attachCellClickEventListener(cell);
                  row.appendChild(cell);
              }
              container.appendChild(row);
@@ -95,6 +98,7 @@
          var toid = to[0] + '-' + to[1];
          var tocell = document.getElementById(toid);
          tocell.classList.remove('fow');
+         tocell.classList.add('actor');
          tocell.innerHTML = '🛸';
      }
 
@@ -103,6 +107,61 @@
          var cell = document.getElementById(id);
          cell.innerHTML = '🚩';
      }
+
+      function attachCellClickEventListener(target) {
+          target.addEventListener('click', (e) => {
+              var classes = e.target.classList;
+              if (classes.contains("actor")) {
+                  e.target.classList.add('cell-selected');
+                  state = e.target.id.split('-');
+              } else {
+                  if (state !== null) {
+                      var start = state;
+                      var startCell = document.getElementById(start.join('-'));
+                      startCell.classList.remove('cell-selected');
+                      state = null;
+
+                      var end = e.target.id.split('-').map(i => parseInt(i));
+                      tryMove(start, end);
+                  }
+              }
+          });
+      }
+
+      function attachEventListeners() {
+          document.addEventListener('keyup', (e) => {
+              console.log(e);
+              console.log(e.target.classList);
+              switch (e.code) {
+              case "ArrowUp":
+                  tryMove();
+                  break;
+              case "ArrowDown":
+                  tryMove();
+                  break;
+              case "ArrowRight":
+                  tryMove();
+                  break;
+              case "ArrowLeft":
+                  tryMove();
+                  break;
+              };
+          });
+      }
+
+      function tryMove(src, dest) {
+          // TODO: should allow only 4 neighbours
+          if (dest[0] < mapDimension[0] &&
+              dest[1] < mapDimension[1]) {
+              move(src, dest);
+          } else {
+              console.log("cannot move", src, dest);
+          }
+      }
+
+      function updateEnergySpent(energy_spent) {
+          console.log(energy_spent);
+      }
 
       function peek(cell, cost) {
           var id = cell[0] + '-' + cell[1];

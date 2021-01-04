@@ -6,6 +6,10 @@
     text-align: center;
 }
 
+.cell-selected {
+    background-color: #ffffed;
+}
+
 .fow {
     background-color: #bbb;
 }
