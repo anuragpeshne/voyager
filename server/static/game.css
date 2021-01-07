@@ -1,9 +1,14 @@
 .cell {
-    float: left;
+    display: table-cell;
     min-height: 15px;
     min-width: 15px;
     border: 1px solid #aaa;
     text-align: center;
+    vertical-align: middle;
+}
+
+#gridContainer {
+    /*display: table;*/
 }
 
 .cell-selected {

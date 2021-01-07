@@ -69,8 +69,9 @@ def move():
             'energy_spent' : current_state['energy_spent']
         })
     else:
-        print ("Cell [%d, %d] not reachable", to_cell[0], to_cell[1])
-        return ("Cell [%d, %d] not reachable", to_cell[0], to_cell[1]), 401
+        msg = "Cell [%d, %d] not reachable" % (to_cell[0], to_cell[1])
+        print (msg)
+        return msg, 401
 
 def __get_neighbours(cell, dim):
     possible_neighbours = [[cell[0] + 1, cell[1]],

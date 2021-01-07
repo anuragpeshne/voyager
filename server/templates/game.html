@@ -24,7 +24,8 @@
   </head>
   <body>
       <div class="container">
-          <div id="gridContainer"></div>
+        <div id="scoreContainer"></div>
+        <div id="gridContainer"></div>
       </div> <!-- /container -->
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
@@ -70,36 +71,73 @@
          }
      }
 
-     function move(from, to) {
-         var payload = {
-             'key': uuid,
-             'to': to
-         }
-         var opts = {
-             method: 'POST',
-             body: JSON.stringify(payload),
-             headers: {
-                 'Content-Type': 'application/json'
-             }
-         };
-         fetch('/move', opts)
-             .then(function (response) {
-                 return response.json();
-             })
-             .then(function (move_resp) {
-                 var peek_cells = move_resp['peek_cells'];
-                 var energy_spent = move_resp['energy_spent'];
-                 peek_cells.forEach(function(cell_data) {
-                     peek(cell_data[0], cell_data[1]);
-                 });
-                 updateEnergySpent(energy_spent);
-             });
+      function getNeighbours(cell, mapDimension) {
+          var possibleNeighbours = [
+              [cell[0] + 1, cell[1]],
+              [cell[0], cell[1] + 1],
+              [cell[0] - 1, cell[1]],
+              [cell[0], cell[1] - 1]
+          ];
+          return possibleNeighbours
+              .filter(cell => {
+                  if (cell[0] >= 0 && cell[0] < mapDimension[0] &&
+                      cell[1] >= 0 && cell[1] < mapDimension[1]) {
+                      return true;
+                  } else {
+                      return false;
+                  }
+              });
+      }
 
-         var toid = to[0] + '-' + to[1];
-         var tocell = document.getElementById(toid);
-         tocell.classList.remove('fow');
-         tocell.classList.add('actor');
-         tocell.innerHTML = '🛸';
+      function validateMove(from, to, mapDimension) {
+          if (from !== null) {
+              var neighbours = getNeighbours(from, mapDimension);
+              console.log(neighbours, from, to);
+              return neighbours
+                  .filter(cell => cell[0] == to[0] && cell[1] == to[1])
+                  .length > 0;
+          } else {
+              return true;
+          }
+      }
+
+     function move(from, to) {
+         if (from == null || validateMove(from, to, mapDimension)) {
+             var payload = {
+                 'key': uuid,
+                 'to': to
+             }
+             var opts = {
+                 method: 'POST',
+                 body: JSON.stringify(payload),
+                 headers: {
+                     'Content-Type': 'application/json'
+                 }
+             };
+             fetch('/move', opts)
+                 .then(function (response) {
+                     return response.json();
+                 })
+                 .then(function (move_resp) {
+                     var peek_cells = move_resp['peek_cells'];
+                     var energy_spent = move_resp['energy_spent'];
+                     peek_cells.forEach(function(cell_data) {
+                         peek(cell_data[0], cell_data[1]);
+                     });
+                     updateEnergySpent(energy_spent);
+                 });
+
+             var toid = to[0] + '-' + to[1];
+             var tocell = document.getElementById(toid);
+             tocell.classList.remove('fow');
+             tocell.classList.add('actor');
+             tocell.innerHTML = '🛸';
+             if (from !== null) {
+                 var fromid = from[0] + '-' + from[1];
+                 var fromcell = document.getElementById(fromid);
+                 fromcell.classList.remove('actor');
+             }
+         }
      }
 
      function placeDestination(destination) {
@@ -113,7 +151,7 @@
               var classes = e.target.classList;
               if (classes.contains("actor")) {
                   e.target.classList.add('cell-selected');
-                  state = e.target.id.split('-');
+                  state = e.target.id.split('-').map(i => parseInt(i));
               } else {
                   if (state !== null) {
                       var start = state;
@@ -161,6 +199,8 @@
 
       function updateEnergySpent(energy_spent) {
           console.log(energy_spent);
+          var scoreDiv = document.getElementById('scoreContainer');
+          scoreDiv.innerHTML = energy_spent;
       }
 
       function peek(cell, cost) {
@@ -168,27 +208,6 @@
           var cell = document.getElementById(id);
           cell.classList.remove('fow');
           cell.innerHTML = cost;
-     }
-
-     function test() {
-         var opts = {
-             method: 'GET',
-             headers: {}
-         };
-         fetch('/maps', opts)
-             .then(function (response) {
-                 return response.json();
-             })
-             .then(function (maps) {
-                 console.log(maps);
-                 var mapSelect = document.getElementById('inputMap');
-                 for (var i = 0; i < maps.length; i++) {
-                     var opt = document.createElement('option');
-                     opt.value = maps[i];
-                     opt.innerHTML = maps[i];
-                     mapSelect.appendChild(opt);
-                 }
-             });
      }
     </script>
   </body>
