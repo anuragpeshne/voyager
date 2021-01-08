@@ -7,5 +7,8 @@
   - [ ] Agent(s)
   - [ ] Layout
 - [ ] Multiple Agents
-- [ ] Score Persistence
+- [ ] Persistence
+  - [ ] Score
+  - [ ] Moves
+- [ ] Playback
 - [ ] AI
