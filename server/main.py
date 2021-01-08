@@ -28,6 +28,7 @@ def game():
     map_data = map_generator.generate(map_name)
     state[random_uuid] = {
         'map_data': map_data,
+        'cur_pos': map_data['start'],
         'energy_spent': 0,
         'pname': player_name,
         'explored_cell': {}
@@ -60,10 +61,10 @@ def move():
     explored_neighbours = [[row, col] for [row, col] in neighbours
                            if (row, col) in current_state['explored_cell']]
 
-    if (len(current_state['explored_cell']) == 0 or
-        len(explored_neighbours) > 0):
+    if __validate_move(to_cell, current_state):
+        if not __check_victory(to_cell, current_state):
+            current_state['energy_spent'] += map_[to_cell[0]][to_cell[1]]
         current_state['explored_cell'][tuple(to_cell)] = True
-        current_state['energy_spent'] += map_[to_cell[0]][to_cell[1]]
         return json.dumps({
             'peek_cells': [[[row, col], map_[row][col]] for [row, col] in neighbours],
             'energy_spent' : current_state['energy_spent']
@@ -81,6 +82,20 @@ def __get_neighbours(cell, dim):
     return [[row, col] for [row, col] in possible_neighbours
             if row >= 0 and row < dim[0] and col >= 0 and col < dim[1]]
 
+def __validate_move(dest_cell, current_state):
+    is_first_move = current_state['cur_pos'] == current_state['map_data']['start']
+    map_ = current_state['map_data']['map']
+    map_dim=[len(map_), len(map_[0])]
+    is_dest_cell_explored = dest_cell in __get_neighbours(current_state['cur_pos'],
+                                                          map_dim)
+    return is_first_move or is_dest_cell_explored
+
+def __check_victory(to_cell, current_state):
+    is_to_destination_cell = to_cell == current_state['map_data']['dest']
+    if is_to_destination_cell:
+        current_state['is_victorious'] = True
+    return ('is_victorious' in current_state or
+            is_to_destination_cell)
 
 if __name__ == "__main__":
     app.run()
