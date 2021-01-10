@@ -6,6 +6,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Game - Voyager</title>
 
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}">
+
     <!-- Bootstrap -->
     <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 
@@ -107,14 +109,16 @@
                  'key': uuid,
                  'to': to
              }
+             var url = window.location.protocol + "//" + window.location.host + "/move";
              var opts = {
                  method: 'POST',
                  body: JSON.stringify(payload),
                  headers: {
-                     'Content-Type': 'application/json'
+                     'Content-Type': 'application/json;charset=utf-8',
+                     'Cache-Control':'no-cache'
                  }
              };
-             fetch('/move', opts)
+             fetch(url, opts)
                  .then(function (response) {
                      return response.json();
                  })
@@ -125,18 +129,18 @@
                          peek(cell_data[0], cell_data[1]);
                      });
                      updateEnergySpent(energy_spent);
-                 });
 
-             var toid = to[0] + '-' + to[1];
-             var tocell = document.getElementById(toid);
-             tocell.classList.remove('fow');
-             tocell.classList.add('actor');
-             tocell.innerHTML = '🛸';
-             if (from !== null) {
-                 var fromid = from[0] + '-' + from[1];
-                 var fromcell = document.getElementById(fromid);
-                 fromcell.classList.remove('actor');
-             }
+                     var toid = to[0] + '-' + to[1];
+                     var tocell = document.getElementById(toid);
+                     tocell.classList.remove('fow');
+                     tocell.classList.add('actor');
+                     tocell.innerHTML = '🛸';
+                     if (from !== null) {
+                         var fromid = from[0] + '-' + from[1];
+                         var fromcell = document.getElementById(fromid);
+                         fromcell.classList.remove('actor');
+                     }
+                 });
          }
      }
 

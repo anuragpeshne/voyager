@@ -8,6 +8,11 @@ import uuid
 app = Flask(__name__, static_url_path='/static')
 state = {}
 
+@app.route('/favicon.ico')
+def favicon():
+    return send_from_directory(os.path.join(app.root_path, 'static'),
+                               'favicon.ico', mimetype='image/vnd.microsoft.icon')
+
 @app.route("/")
 def index():
     return render_template('login.html')
@@ -98,4 +103,4 @@ def __check_victory(to_cell, current_state):
             is_to_destination_cell)
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', debug=True, port=80)
