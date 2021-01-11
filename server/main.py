@@ -103,4 +103,4 @@ def __check_victory(to_cell, current_state):
             is_to_destination_cell)
 
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', debug=True, port=80)
+    app.run(host='0.0.0.0')
